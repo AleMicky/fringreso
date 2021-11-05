@@ -5,6 +5,7 @@ import 'package:fringreso/src/pages/home_page.dart';
 import 'package:fringreso/src/pages/login_page.dart';
 import 'package:fringreso/src/providers/ui_provider.dart';
 import 'package:fringreso/src/pages/entry_page.dart';
+import 'package:fringreso/src/providers/tipo_ingreso_provider.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => new UiProvider()),
+        ChangeNotifierProvider(create: (_) => new TipoIngresoProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

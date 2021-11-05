@@ -1,0 +1,28 @@
+{
+    "tipo" : [
+        {
+            "id" : 1,
+            "tipo" : "Propietario",
+            "placa": true,
+            "empresa": false,
+            "nombre": true,
+            "cedula": false,
+            "calle":true,
+            "pasajero": false,
+            "fotoPlaca": false,
+            "fotoCedula ": false
+        },
+        {
+            "id" : 1,
+            "tipo" : "Delivery",
+            "placa": true,
+            "empresa": true,
+            "nombre": false,
+            "cedula": false,
+            "calle":true,
+            "pasajero": false,
+            "fotoPlaca": true,
+            "fotoCedula ": false
+        }
+    ]
+}

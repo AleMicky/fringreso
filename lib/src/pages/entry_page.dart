@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fringreso/src/models/tipoIngreso.dart';
+import 'package:fringreso/src/providers/entry_form_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:fringreso/src/providers/tipo_ingreso_provider.dart';
 import 'package:fringreso/src/widgets/input_decorations.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -18,7 +22,9 @@ class EntryPage extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(Icons.search),
-            onPressed: () {},
+            onPressed: () {
+              _showDialog(context);
+            },
           ),
         ],
       ),
@@ -28,12 +34,51 @@ class EntryPage extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
             child: Column(
               children: [
-                _FormEntry(),
+                ChangeNotifierProvider(
+                  create: (_) => EntryFormProvider(),
+                  child: _FormEntry(),
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _showDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Buscar por Cedula/Placa'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Codigo',
+                  ),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('CANCELAR'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('BUSCAR'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -52,95 +97,79 @@ class EntryPage extends StatelessWidget {
 class _FormEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final headlines = Provider.of<TipoIngresoProvider>(context).headlines;
+    final entryForm = Provider.of<EntryFormProvider>(context);
+
     return Container(
       child: Form(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        key: entryForm.formKey,
         child: Column(
           children: [
             _espacio(
               DropdownButtonFormField(
-                items: [].map((item) {
+                items: headlines.map((item) {
                   return new DropdownMenuItem(
                     child: new Text(item.descripcion),
                     value: item.id,
                   );
                 }).toList(),
-                value: 2,
+                //  value: 2,
                 onSaved: (value) => print(value),
                 decoration: InputDecorations.authInputDecoration(
                   labelText: 'Tipo Ingreso',
                 ),
-                onChanged: (id) {},
+                onChanged: (id) {
+                  TipoIngreso tipo =
+                      headlines.firstWhere((tipo) => tipo.id == id);
+                  entryForm.iniciarEvento(tipo);
+                },
               ),
             ),
-            _espacio(
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      // initialValue: 'ASD-123',
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecorations.authInputDecoration(
-                        labelText: 'Placa',
-                      ),
-                      keyboardType: TextInputType.text,
-                      validator: (value) => (value == null || value.isEmpty)
-                          ? 'Por favor ingrese un texto'
-                          : null,
-                      onChanged: (value) => print(value.trim()),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Column(
+            entryForm.placaBool
+                ? _espacio(
+                    Row(
                       children: [
-                        Text('Placa'),
-                        IconButton(
-                          icon: const Icon(Icons.camera_alt),
-                          tooltip: 'Foto Placa',
-                          onPressed: () {},
-                        )
+                        Expanded(
+                          child: TextFormField(
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecorations.authInputDecoration(
+                              labelText: 'Placa',
+                            ),
+                            keyboardType: TextInputType.text,
+                            validator: (value) =>
+                                (value == null || value.isEmpty)
+                                    ? 'Por favor ingrese un texto'
+                                    : null,
+                            onChanged: (value) => print(value.trim()),
+                          ),
+                        ),
+                        entryForm.fotoPlaca
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0),
+                                child: Column(
+                                  children: [
+                                    Text('Placa'),
+                                    IconButton(
+                                      icon: const Icon(Icons.camera_alt),
+                                      tooltip: 'Foto Placa',
+                                      onPressed: () {},
+                                    )
+                                  ],
+                                ),
+                              )
+                            : Container(),
                       ],
                     ),
                   )
-                ],
-              ),
-            ),
-            _espacio(
-              TextFormField(
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecorations.authInputDecoration(
-                  labelText: 'Empresa',
-                ),
-                keyboardType: TextInputType.text,
-                validator: (value) => (value == null || value.isEmpty)
-                    ? 'Por favor ingrese un texto'
-                    : null,
-                onChanged: (value) => print(value.trim()),
-              ),
-            ),
-            _espacio(
-              DropdownButtonFormField<String>(
-                  items: ['si', 'no']
-                      .map((value) => DropdownMenuItem(
-                            child: Text(value),
-                            value: value,
-                          ))
-                      .toList(),
-                  // value: _opcionPasajero,
-                  onSaved: (value) => print(value),
-                  decoration: InputDecorations.authInputDecoration(
-                    labelText: 'Pasajero',
-                  ),
-                  onChanged: (opt) => print(opt)),
-            ),
-            _espacio(
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
+                : Container(),
+            entryForm.empresaBool
+                ? _espacio(
+                    TextFormField(
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecorations.authInputDecoration(
-                        labelText: 'Cedula Identidad',
+                        labelText: 'Empresa',
                       ),
                       keyboardType: TextInputType.text,
                       validator: (value) => (value == null || value.isEmpty)
@@ -148,51 +177,95 @@ class _FormEntry extends StatelessWidget {
                           : null,
                       onChanged: (value) => print(value.trim()),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Column(
+                  )
+                : Container(),
+            entryForm.pasajeroBool
+                ? _espacio(
+                    DropdownButtonFormField<String>(
+                        items: ['si', 'no']
+                            .map((value) => DropdownMenuItem(
+                                  child: Text(value),
+                                  value: value,
+                                ))
+                            .toList(),
+                        // value: _opcionPasajero,
+                        onSaved: (value) => print(value),
+                        decoration: InputDecorations.authInputDecoration(
+                          labelText: 'Pasajero',
+                        ),
+                        onChanged: (opt) => print(opt)),
+                  )
+                : Container(),
+            entryForm.cedulaBool
+                ? _espacio(
+                    Row(
                       children: [
-                        Text('C.I.'),
-                        IconButton(
-                          icon: const Icon(Icons.camera_alt),
-                          tooltip: 'Foto C.I.',
-                          onPressed: () {},
-                        )
+                        Expanded(
+                          child: TextFormField(
+                            textCapitalization: TextCapitalization.sentences,
+                            decoration: InputDecorations.authInputDecoration(
+                              labelText: 'Cedula Identidad',
+                            ),
+                            keyboardType: TextInputType.text,
+                            validator: (value) =>
+                                (value == null || value.isEmpty)
+                                    ? 'Por favor ingrese un texto'
+                                    : null,
+                            onChanged: (value) => print(value.trim()),
+                          ),
+                        ),
+                        entryForm.fotoCedula
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0),
+                                child: Column(
+                                  children: [
+                                    Text('C.I.'),
+                                    IconButton(
+                                      icon: const Icon(Icons.camera_alt),
+                                      tooltip: 'Foto C.I.',
+                                      onPressed: () {},
+                                    )
+                                  ],
+                                ),
+                              )
+                            : Container(),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            _espacio(
-              TextFormField(
-                // initialValue: initialValue,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecorations.authInputDecoration(
-                  labelText: 'Calle',
-                ),
-                keyboardType: TextInputType.text,
-                validator: (value) => (value == null || value.isEmpty)
-                    ? 'Por favor ingrese un texto'
-                    : null,
-                onChanged: (value) => print(value.trim()),
-              ),
-            ),
-            _espacio(
-              TextFormField(
-                // initialValue: initialValue,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecorations.authInputDecoration(
-                  labelText: 'Número',
-                ),
-                keyboardType: TextInputType.text,
-                validator: (value) => (value == null || value.isEmpty)
-                    ? 'Por favor ingrese un texto'
-                    : null,
-                onChanged: (value) => print(value.trim()),
-              ),
-            ),
+                  )
+                : Container(),
+            entryForm.calleBool
+                ? _espacio(
+                    TextFormField(
+                      // initialValue: initialValue,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecorations.authInputDecoration(
+                        labelText: 'Calle',
+                      ),
+                      keyboardType: TextInputType.text,
+                      validator: (value) => (value == null || value.isEmpty)
+                          ? 'Por favor ingrese un texto'
+                          : null,
+                      onChanged: (value) => print(value.trim()),
+                    ),
+                  )
+                : Container(),
+            entryForm.numeroBool
+                ? _espacio(
+                    TextFormField(
+                      // initialValue: initialValue,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecorations.authInputDecoration(
+                        labelText: 'Número',
+                      ),
+                      keyboardType: TextInputType.text,
+                      validator: (value) => (value == null || value.isEmpty)
+                          ? 'Por favor ingrese un texto'
+                          : null,
+                      onChanged: (value) => print(value.trim()),
+                    ),
+                  )
+                : Container(),
             _espacio(
               TextFormField(
                 textCapitalization: TextCapitalization.sentences,
@@ -204,6 +277,72 @@ class _FormEntry extends StatelessWidget {
                     ? 'Por favor ingrese un texto'
                     : null,
                 onChanged: (value) => print(value.trim()),
+              ),
+            ),
+            _espacio(
+              Row(
+                children: [
+                  Expanded(
+                    child: SwitchListTile(
+                      title: Text('Ingreso'),
+                      value: entryForm.ingreso,
+                      onChanged: (valor) => entryForm.ingreso = valor,
+                    ),
+                  ),
+                  Expanded(
+                    child: MaterialButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      disabledColor: Colors.grey,
+                      elevation: 0,
+                      color: Colors.deepPurple,
+                      child: Container(
+                          padding: EdgeInsets.symmetric(
+                              //horizontal: 80,
+                              //vertical: 15,
+                              ),
+                          child: Text(
+                            entryForm.isLoading ? 'Espera' : 'Registrar',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          )),
+                      onPressed: entryForm.isLoading
+                          ? null
+                          : () async {
+                              FocusScope.of(context).unfocus();
+                              /* final ingresoService =
+                                  Provider.of<IngresarService>(
+                                context,
+                                listen: false,
+                              );
+                              if (!entryForm.isValidForm()) return;
+                              entryForm.isLoading = true;
+
+                              final String? errorMessage =
+                                  await ingresoService.crearIngreso(
+                                entryForm.idTipoIngreso,
+                                entryForm.empresa,
+                                entryForm.placa,
+                                '',
+                                entryForm.cedula,
+                                'no',
+                                entryForm.calle,
+                                entryForm.numero,
+                                entryForm.ingreso ? 1 : 0,
+                                entryForm.observacion,
+                              );
+                              if (errorMessage == null) {
+                                entryForm.isLoading = false;
+                              } else {
+                                NotificationsService.showSnackbar(errorMessage);
+                                entryForm.isLoading = false;
+                              }*/
+                            },
+                    ),
+                  ),
+                ],
               ),
             ),
             _espacio(
