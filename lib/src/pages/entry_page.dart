@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:fringreso/src/models/tipoIngreso.dart';
 import 'package:fringreso/src/providers/entry_form_provider.dart';
+import 'package:fringreso/src/providers/ingresar_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fringreso/src/providers/tipo_ingreso_provider.dart';
 import 'package:fringreso/src/widgets/input_decorations.dart';
@@ -141,7 +143,8 @@ class _FormEntry extends StatelessWidget {
                                 (value == null || value.isEmpty)
                                     ? 'Por favor ingrese un texto'
                                     : null,
-                            onChanged: (value) => print(value.trim()),
+                            onChanged: (value) =>
+                                entryForm.placa = value.trim(),
                           ),
                         ),
                         entryForm.fotoPlaca
@@ -154,7 +157,20 @@ class _FormEntry extends StatelessWidget {
                                     IconButton(
                                       icon: const Icon(Icons.camera_alt),
                                       tooltip: 'Foto Placa',
-                                      onPressed: () {},
+                                      onPressed: () async {
+                                        final ImagePicker picker =
+                                            ImagePicker();
+                                        final XFile? pickedFile =
+                                            await picker.pickImage(
+                                                source: ImageSource.camera,
+                                                imageQuality: 100);
+                                        if (pickedFile == null) {
+                                          print('No seleciono nada');
+                                          return;
+                                        }
+                                        print(
+                                            'tenemos imagen ${pickedFile.path}');
+                                      },
                                     )
                                   ],
                                 ),
@@ -175,7 +191,7 @@ class _FormEntry extends StatelessWidget {
                       validator: (value) => (value == null || value.isEmpty)
                           ? 'Por favor ingrese un texto'
                           : null,
-                      onChanged: (value) => print(value.trim()),
+                      onChanged: (value) => entryForm.empresa = value.trim(),
                     ),
                   )
                 : Container(),
@@ -211,7 +227,8 @@ class _FormEntry extends StatelessWidget {
                                 (value == null || value.isEmpty)
                                     ? 'Por favor ingrese un texto'
                                     : null,
-                            onChanged: (value) => print(value.trim()),
+                            onChanged: (value) =>
+                                entryForm.cedula = value.trim(),
                           ),
                         ),
                         entryForm.fotoCedula
@@ -246,7 +263,7 @@ class _FormEntry extends StatelessWidget {
                       validator: (value) => (value == null || value.isEmpty)
                           ? 'Por favor ingrese un texto'
                           : null,
-                      onChanged: (value) => print(value.trim()),
+                      onChanged: (value) => entryForm.calle = value.trim(),
                     ),
                   )
                 : Container(),
@@ -262,7 +279,7 @@ class _FormEntry extends StatelessWidget {
                       validator: (value) => (value == null || value.isEmpty)
                           ? 'Por favor ingrese un texto'
                           : null,
-                      onChanged: (value) => print(value.trim()),
+                      onChanged: (value) => entryForm.numero = value.trim(),
                     ),
                   )
                 : Container(),
@@ -276,7 +293,7 @@ class _FormEntry extends StatelessWidget {
                 validator: (value) => (value == null || value.isEmpty)
                     ? 'Por favor ingrese un texto'
                     : null,
-                onChanged: (value) => print(value.trim()),
+                onChanged: (value) => entryForm.observacion = value.trim(),
               ),
             ),
             _espacio(
@@ -298,32 +315,42 @@ class _FormEntry extends StatelessWidget {
                       elevation: 0,
                       color: Colors.deepPurple,
                       child: Container(
-                          padding: EdgeInsets.symmetric(
-                              //horizontal: 80,
-                              //vertical: 15,
-                              ),
                           child: Text(
-                            entryForm.isLoading ? 'Espera' : 'Registrar',
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          )),
+                        entryForm.isLoading ? 'Espera' : 'Registrar',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      )),
                       onPressed: entryForm.isLoading
                           ? null
                           : () async {
                               FocusScope.of(context).unfocus();
-                              /* final ingresoService =
-                                  Provider.of<IngresarService>(
+                              final ingresoService =
+                                  Provider.of<IngresarProvider>(
                                 context,
                                 listen: false,
                               );
                               if (!entryForm.isValidForm()) return;
                               entryForm.isLoading = true;
 
+                              // print(entryForm.idTipoIngreso);
+                              // print(entryForm.empresa);
+                              // print(entryForm.placa);
+                              // print(entryForm.cedula);
+                              // print(entryForm.calle);
+                              // print(entryForm.numero);
+                              // print(entryForm.ingreso);
+                              // print(entryForm.observacion);
+
+                              entryForm.isLoading = false;
+
                               final String? errorMessage =
                                   await ingresoService.crearIngreso(
                                 entryForm.idTipoIngreso,
-                                entryForm.empresa,
+                                entryForm.empresa == null ||
+                                        entryForm.empresa == ''
+                                    ? 'no'
+                                    : entryForm.empresa,
                                 entryForm.placa,
                                 '',
                                 entryForm.cedula,
@@ -335,10 +362,21 @@ class _FormEntry extends StatelessWidget {
                               );
                               if (errorMessage == null) {
                                 entryForm.isLoading = false;
+                                //  ingresoService.getTopHeadlines();
                               } else {
-                                NotificationsService.showSnackbar(errorMessage);
+                                final snackBar = new SnackBar(
+                                  content: Text(
+                                    errorMessage,
+                                    style: TextStyle(
+                                      color: Colors.blueGrey[900],
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
                                 entryForm.isLoading = false;
-                              }*/
+                              }
                             },
                     ),
                   ),

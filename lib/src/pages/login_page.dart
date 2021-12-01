@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fringreso/src/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fringreso/src/providers/login_form_provider.dart';
 import 'package:fringreso/src/widgets/input_decorations.dart';
@@ -57,12 +58,15 @@ class _LoginForm extends StatelessWidget {
           children: [
             TextFormField(
               autocorrect: false,
+              autofocus: true,
               keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.send,
+              textCapitalization: TextCapitalization.none,
               decoration: InputDecorations.authInputDecoration(
                 labelText: 'Cuenta',
                 prefixIcon: Icons.person_outline,
               ),
-              onChanged: (value) => print(value),
+              onChanged: (value) => loginForm.cuenta = value,
               validator: (value) {
                 return (value != null && value.length >= 6)
                     ? null
@@ -72,12 +76,41 @@ class _LoginForm extends StatelessWidget {
             SizedBox(height: 30),
             TextFormField(
               autocorrect: false,
-              obscureText: true,
-              decoration: InputDecorations.authInputDecoration(
+              obscureText: loginForm.isObscure,
+              decoration: InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.deepPurple,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                labelStyle: TextStyle(
+                  color: Colors.grey,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
                 labelText: 'Contraseña',
-                prefixIcon: Icons.lock_outline,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    loginForm.isObscure
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Colors.deepPurple,
+                  ),
+                  onPressed: () {
+                    loginForm.isObscure = !loginForm.isObscure;
+                  },
+                ),
+                //prefixIcon: Icons.lock_outline,
               ),
-              onChanged: (value) => print(value),
+              onChanged: (value) => loginForm.password = value,
               validator: (value) {
                 return (value != null && value.length >= 6)
                     ? null
@@ -98,13 +131,45 @@ class _LoginForm extends StatelessWidget {
                   vertical: 15,
                 ),
                 child: Text(
-                  'Ingresar',
+                  loginForm.isLoading ? 'Espere' : 'Ingresar',
                   style: TextStyle(
                     color: Colors.white,
                   ),
                 ),
               ),
-              onPressed: () {},
+              onPressed: loginForm.isLoading
+                  ? null
+                  : () async {
+                      FocusScope.of(context).unfocus();
+                      final authService =
+                          Provider.of<AuthProvider>(context, listen: false);
+
+                      if (!loginForm.isValidForm()) return;
+
+                      loginForm.isLoading = true;
+
+                      final String? errorMessage = await authService.login(
+                        loginForm.cuenta,
+                        loginForm.password,
+                      );
+
+                      if (errorMessage == null) {
+                        loginForm.isLoading = false;
+                        Navigator.pushReplacementNamed(context, 'home');
+                      } else {
+                        final snackBar = new SnackBar(
+                          content: Text(
+                            errorMessage,
+                            style: TextStyle(
+                              color: Colors.blueGrey[900],
+                              fontSize: 15,
+                            ),
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        loginForm.isLoading = false;
+                      }
+                    },
             ),
           ],
         ),

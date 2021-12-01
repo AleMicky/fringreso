@@ -5,18 +5,17 @@ class EntryFormProvider extends ChangeNotifier {
   GlobalKey<FormState> formKey = new GlobalKey<FormState>();
 
   int idTipoIngreso = 0;
-  String placa = '';
-  String empresa = '';
-  String nombre = '';
-  String cedula = '';
-  String calle = '';
-  String numero = '';
+  String? placa;
+  String? empresa;
+  String? nombre;
+  String? cedula;
+  String? calle;
+  String? numero;
   String pasajero = 'no';
-  String observacion = '';
+  String? observacion;
 
   bool _isLoading = false;
   bool _ingreso = false;
-
   bool _placaBool = false;
   bool _empresaBool = false;
   bool _nombreBool = false;

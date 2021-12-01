@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fringreso/src/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthProvider>(context, listen: false);
     return Scaffold(
       body: ListView(
         children: [
@@ -33,7 +36,30 @@ class ProfilePage extends StatelessWidget {
               ),
               onChanged: (value) {},
             ),
-          )
+          ),
+          MaterialButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            disabledColor: Colors.grey,
+            elevation: 0,
+            color: Colors.red,
+            child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 100,
+                  vertical: 15,
+                ),
+                child: Text(
+                  'Salir',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                )),
+            onPressed: () {
+              authService.logout();
+              Navigator.pushReplacementNamed(context, 'login');
+            },
+          ),
         ],
       ),
     );
