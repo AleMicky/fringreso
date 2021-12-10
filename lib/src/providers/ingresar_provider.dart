@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:fringreso/src/models/ingreso.dart';
 import 'package:fringreso/src/providers/auth_provider.dart';
@@ -44,9 +43,14 @@ class IngresarProvider with ChangeNotifier {
       "observacion": observacion
     };
 
+    print(params);
+
     final url = Uri.parse('${AppUrl.baseURL}/api/Ingreso');
+
     final auth = new AuthProvider();
+
     String key = await auth.readToken();
+
     final resp = await http.post(
       url,
       headers: {
@@ -56,29 +60,17 @@ class IngresarProvider with ChangeNotifier {
       body: json.encode(params),
     );
 
-    Map<String, dynamic> decodedResp = json.decode(resp.body);
-
-    // Ingreso respData = decodedResp.map((value) => print(value));
-
-    /*decodedResp.forEach((key, value) {
-      final tmp = Ingreso.fromJson(value);
-      print('${key}: ${value}');
-      this.headlines.add(tmp);
-    });*/
-
+    Map<String, dynamic> decodedData = json.decode(resp.body);
+    Ingreso ingTemp = Ingreso.fromJson(decodedData);
+    this.headlines.add(ingTemp);
     isSaving = false;
     notifyListeners();
 
-    /*
-    print(decodedResp);
-
-    print(decodedResp);
-    if (decodedResp.containsKey('id')) {
+    if (decodedData.containsKey('id')) {
       return null;
     } else {
-      return decodedResp['message'];
-    }*/
-    return null;
+      return decodedData['message'];
+    }
   }
 
   getTopHeadlines() async {

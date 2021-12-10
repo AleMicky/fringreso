@@ -251,6 +251,22 @@ class _FormEntry extends StatelessWidget {
                     ),
                   )
                 : Container(),
+            entryForm.nombreBool
+                ? _espacio(
+                    TextFormField(
+                      // initialValue: initialValue,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecorations.authInputDecoration(
+                        labelText: 'Nombre Completo',
+                      ),
+                      keyboardType: TextInputType.text,
+                      validator: (value) => (value == null || value.isEmpty)
+                          ? 'Por favor ingrese un texto'
+                          : null,
+                      onChanged: (value) => entryForm.nombre = value.trim(),
+                    ),
+                  )
+                : Container(),
             entryForm.calleBool
                 ? _espacio(
                     TextFormField(
@@ -349,10 +365,13 @@ class _FormEntry extends StatelessWidget {
                                 entryForm.idTipoIngreso,
                                 entryForm.empresa == null ||
                                         entryForm.empresa == ''
-                                    ? 'no'
+                                    ? null
                                     : entryForm.empresa,
                                 entryForm.placa,
-                                '',
+                                entryForm.nombre == null ||
+                                        entryForm.nombre == ''
+                                    ? null
+                                    : entryForm.nombre,
                                 entryForm.cedula,
                                 'no',
                                 entryForm.calle,
